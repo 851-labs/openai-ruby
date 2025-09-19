@@ -540,8 +540,7 @@ module OpenAI
           y << "Content-Disposition: form-data"
 
           unless key.nil?
-            name = ERB::Util.url_encode(key.to_s)
-            y << "; name=\"#{name}\""
+            y << "; name=\"#{key}\""
           end
 
           case val
@@ -574,9 +573,9 @@ module OpenAI
             in Hash
               body.each do |key, val|
                 case val
-                in Array if val.all? { primitive?(_1) }
+                in Array if val.all? { primitive?(_1) || OpenAI::Internal::Type::FileInput === _1 }
                   val.each do |v|
-                    write_multipart_chunk(y, boundary: boundary, key: key, val: v, closing: closing)
+                    write_multipart_chunk(y, boundary: boundary, key: "#{key}[]", val: v, closing: closing)
                   end
                 else
                   write_multipart_chunk(y, boundary: boundary, key: key, val: val, closing: closing)
